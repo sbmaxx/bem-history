@@ -1,7 +1,7 @@
 modules.define('history', ['inherit', 'events', 'jquery'], function(provide, inherit, events, $) {
 
 // Fallback for old browsers
-if (history.pushState) {
+if (!history.pushState) {
     provide({
         pushState: function (state, title, url) {
             if (url) window.location.href = url;
