@@ -3,7 +3,7 @@ BEM.DOM.decl('test', {
         js: function() {
             var expect = chai.expect,
                 assert = chai.assert;
-            
+
             describe('Uri.js', function() {
                 var u;
 
@@ -65,17 +65,17 @@ BEM.DOM.decl('test', {
                     u.path('');
                     expect(u.toString()).to.equal('http://test.com');
                 })
-                
+
                 it('should be able to parse query', function() {
                     u = BEM.blocks.uri.parse('http://test.com/index.html?param1=1&param2=21&param2=22');
                     expect(u.queryParams).to.deep.equal({ param1: ['1'], param2: ['21', '22'] });
                 })
-                
+
                 it('should differ ?param from ?param=', function() {
                     u = BEM.blocks.uri.parse('http://test.com/index.html?param1&param2=&param1');
                     expect(u.queryParams).to.deep.equal({ param1: [], param2: [''] });
                 })
-                
+
                 it('should add { param: [] } to query as ?param', function() {
                     u = BEM.blocks.uri.parse('http://test.com/index.html');
                     u.addParam('param', []);
@@ -205,111 +205,126 @@ BEM.DOM.decl('test', {
                     var parsed = BEM.blocks.uri.parse('http://example.com' + originalQuery)
                     expect(parsed.query()).to.equal(originalQuery)
                 })
-                
+
                 it('should be able to return url root', function() {
                     u = BEM.blocks.uri.parse('http://test.com/ololo/trololo.html?param1=1#!123');
                     expect(u.getRoot()).to.equal('http://test.com/ololo');
                 })
-                
+
                 it('should be able to decode cp1251 encoded params', function() {
                     u = BEM.blocks.uri.parse('http://test.com/ololo/trololo.html?text=%F2%E0%E1%EB%EE');
                     expect(u.getParam('text')[0]).to.equal('табло');
                 })
-                
+
                 it('should not fall on params encoded with unknown encoding', function() {
                     u = BEM.blocks.uri.parse('http://test.com/ololo/trololo.html?text=%COCO%C0C0');
                     expect(u.getParam('text')[0]).to.equal('%COCO%C0C0');
                 })
-                
+
                 it('should be able to normalize a full url to percentage encoding', function() {
                     u = BEM.blocks.uri.parse('http://yandex.ru/yandsearch?text=yandex+почта&lr=213');
                     expect(u.toString()).to.equal('http://yandex.ru/yandsearch?text=yandex%20%D0%BF%D0%BE%D1%87%D1%82%D0%B0&lr=213');
                 })
             })
-            
+
             var windowHistoryBackup = window.history;
-            
+
             describe('Hashbang fallback', function() {
                 // In Firefox window.history can't be deleted or replaced with {}, undefined,
                 // so this tests section fails.
                 window.history = {};
-                
+
                 var h = BEM.blocks.history.getInstance(),
                     l = BEM.blocks.location.getInstance();
-                    
-                
+
+
                 describe('history block', function() {
-                    
+
                     it('should be able to generate hashbang from url', function() {
                         var hashbang = h._generateHashbang('/desktop.bundles/index/index.html?test=a&ololo=123');
                         expect(hashbang).to.equal('!/index.html?test=a&ololo=123');
                     })
-                    
+
                 })
-                
+
                 describe('location block', function() {
-                    
+
                     it('should change location by path and emit event hashchange', function() {
                         l.change({ url: '/desktop.bundles/index/index.html?test=a&ololo=123' });
                         var u = BEM.blocks.uri.parse(window.location.href);
                         expect('#' + u.anchor()).to.equal('#!/index.html?test=a&ololo=123');
                     })
-                    
+
                     it('should change location by params with forceParams flag and emit event hashchange', function() {
                         l.change({ params: { test: [1,2] }, forceParams: true });
                         var u = BEM.blocks.uri.parse(window.location.href);
                         expect('#' + u.anchor()).to.equal('#!/index.html?test=1&test=2');
                     })
-                    
+
                     it('should change location by params without forceParams flag and emit event hashchange', function() {
                         l.change({ params: { param2: [22] } });
                         var u = BEM.blocks.uri.parse(window.location.href);
                         expect('#' + u.anchor()).to.equal('#!/index.html?test=1&test=2&param2=22');
                     })
-                
+
                 })
             })
-            
+
             describe('Native API', function() {
                 BEM.blocks.history._instance = null;
                 BEM.blocks.location._instance = null;
                 window.history = windowHistoryBackup;
-                
+
                 var h = BEM.blocks.history.getInstance(),
                     l = BEM.blocks.location.getInstance();
-                
+
                 describe('history block', function() {
-                    
+
                     it('should be able to remove hashbang from url', function() {
                         var url = h._removeHashbang('/desktop.bundles/index/index.html?ololo=trololo#!/index.html?test=a&ololo=123'),
                             checkUrl = BEM.blocks.uri.parse('/desktop.bundles/index/index.html?test=a&ololo=123');
                         expect(url).to.equal(checkUrl.build());
                     })
-                    
+
                 })
-                
+
                 describe('location block', function() {
-                    
+
                     it('should change location by path and emit history event statechange', function() {
                         l.change({ url: '/desktop.bundles/index/index.html?test=a&ololo=123' });
                         var u = BEM.blocks.uri.parse(window.location.href);
                         expect(u.path() + u.query()).to.equal('/desktop.bundles/index/index.html?test=a&ololo=123');
                     })
-                    
+
                     it('should change location by params with forceParams flag and emit history event statechange', function() {
                         l.change({ params: { test: [1,2] }, forceParams: true });
                         var u = BEM.blocks.uri.parse(window.location.href);
                         expect(u.path() + u.query()).to.equal('/desktop.bundles/index/index.html?test=1&test=2');
                     })
-                
+
                     it('should change location by params without forceParams flag and emit history event statechange', function() {
                         l.change({ params: { param2: [22] } });
                         var u = BEM.blocks.uri.parse(window.location.href);
                         expect(u.path() + u.query()).to.equal('/desktop.bundles/index/index.html?test=1&test=2&param2=22');
                     })
-                    
+
+                    it('shoud raise security error for different domain', function() {
+
+                        var before = BEM.blocks.uri.parse(window.location.href);
+
+                        try {
+                            l.change({ url: 'http://example.com' });
+                        } catch(e) {
+                            expect(e.name).to.equal('SecurityError');
+                        }
+
+                        var after = BEM.blocks.uri.parse(window.location.href);
+                        expect(after.host()).to.equal(before.host());
+
+                    })
+
                 })
-                
+
             })
         }
     }

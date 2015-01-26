@@ -10,7 +10,7 @@ BEM.decl('location', {
         }
 
     },
-    
+
     /**
      * Reaction for the history state change.
      *
@@ -21,7 +21,7 @@ BEM.decl('location', {
         this._syncState();
 
         // Some browsers (like Chromium v36) emit "popstate" event when you return from other site
-        // using back/forward buttons. But some doesn't (like FireFox v28). 
+        // using back/forward buttons. But some doesn't (like FireFox v28).
         // We don't want to track this "popstate" event like location change.
         if (this._state.referer === BEM.blocks.uri.normalize(window.location.href)) return;
 
@@ -52,7 +52,7 @@ BEM.decl('location', {
             // http://yandex.ru/yandsearch?text=ololo&lr=213
             hostname: uri.host(),                   // page hostname - yandex.ru
             path: uri.path(),                       // path to the current page - /yandsearch
-            params: uri.queryParams                 // search params – 
+            params: uri.queryParams                 // search params –
             // { text: ['ololo'], lr: ['213'] }
         });
 
@@ -69,7 +69,7 @@ BEM.decl('location', {
      */
     change: function(data) {
         var uri = BEM.blocks.uri.parse(data.url);
-        
+
         if (data.url) {
             delete data.params;
         }
@@ -99,10 +99,13 @@ BEM.decl('location', {
                 }
             );
         } catch (e) {
+            if (e.name === 'SecurityError') {
+                throw e;
+            }
             window.location.assign(data.url);
         }
     },
-    
+
     /**
      * Returns current state.
      * @returns {Object} state
@@ -110,18 +113,18 @@ BEM.decl('location', {
     getState: function() {
         return $.extend(true, {}, this._state);
     },
-    
+
     /**
      * Returns an Uri instance constructed from the current state url.
-     * @returns {Object} uriInstance    
+     * @returns {Object} uriInstance
      */
     getUri: function() {
         return BEM.blocks.uri.parse(this._state.url);
     },
-    
+
     /**
      * Returns previous url.
-     * @returns {String} refererUrl    
+     * @returns {String} refererUrl
      */
     getReferer: function() {
         return this._state.referer;
@@ -130,7 +133,7 @@ BEM.decl('location', {
 }, {
 
     _instance: null,
-    
+
     getInstance: function() {
         return this._instance || (this._instance = BEM.create('location'));
     }
